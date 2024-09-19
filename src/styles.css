@@ -1,1 +1,7 @@
 @import '@angular/material/prebuilt-themes/azure-blue.css';
+
+.mat-mdc-dialog-surface.mdc-dialog__surface{
+    overflow: hidden;
+    text-align: center;
+    padding: 10px;
+}

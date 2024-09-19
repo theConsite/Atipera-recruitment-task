@@ -10,3 +10,9 @@
     left: 0;
     top: 0;
   }
+
+  .mat-mdc-row:hover .mat-mdc-cell {
+    border-color: #005cbb;
+    color: #005cbb;
+    cursor: pointer;
+  }

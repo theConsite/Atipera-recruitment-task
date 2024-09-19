@@ -4,6 +4,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgIf } from '@angular/common';
 import { Subject,debounceTime } from 'rxjs';
 import { MatInputModule } from '@angular/material/input';
+import { MatDialog } from '@angular/material/dialog';
+import { EditDialogComponent } from './edit-dialog/edit-dialog.component';
 
 export interface PeriodicElement {
   position: number;
@@ -40,21 +42,26 @@ const ELEMENT_DATA: PeriodicElement[] = [
 export class AppComponent implements OnInit {
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
   dataSource: PeriodicElement[] = [];
-  isLoading: boolean = true;
+  isLoading: boolean = false;
   filterValue: string = '';
   filterSubject: Subject<string> = new Subject<string>();
 
-  constructor() {}
+  constructor(public dialog: MatDialog) {}
 
   ngOnInit(): void {
-    setTimeout(() => {
-      this.dataSource = [...ELEMENT_DATA];
-      this.isLoading = false;
-    }, 1500);
+    this.getData()
 
     this.filterSubject.pipe(debounceTime(2000)).subscribe(() => {
       this.applyFilter();
     });
+  }
+
+  getData(){
+    this.isLoading = true;
+    setTimeout(() => {
+      this.dataSource = [...ELEMENT_DATA];
+      this.isLoading = false;
+    }, 1500);
   }
 
   applyFilter() {
@@ -73,5 +80,22 @@ export class AppComponent implements OnInit {
     this.filterValue = input.value;
     this.filterSubject.next(this.filterValue);
   }
+
+  openEditDialog(element: PeriodicElement): void {
+    const dialogRef = this.dialog.open(EditDialogComponent, {
+      width: '300px',
+      data: { ...element } 
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const index = ELEMENT_DATA.findIndex(e => e.position === result.position);
+        if (index > -1) {
+          ELEMENT_DATA[index] = result;
+          this.getData();
+        }
+      }
+    });
+  }
+
 
 }
