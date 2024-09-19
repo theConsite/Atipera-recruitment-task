@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgIf } from '@angular/common';
-
-
+import { Subject,debounceTime } from 'rxjs';
+import { MatInputModule } from '@angular/material/input';
 
 export interface PeriodicElement {
   position: number;
@@ -33,13 +33,16 @@ const ELEMENT_DATA: PeriodicElement[] = [
   imports: [
     MatTableModule,
     MatProgressSpinnerModule,
-    NgIf
+    NgIf,
+    MatInputModule
   ],
 })
 export class AppComponent implements OnInit {
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
   dataSource: PeriodicElement[] = [];
   isLoading: boolean = true;
+  filterValue: string = '';
+  filterSubject: Subject<string> = new Subject<string>();
 
   constructor() {}
 
@@ -48,6 +51,27 @@ export class AppComponent implements OnInit {
       this.dataSource = [...ELEMENT_DATA];
       this.isLoading = false;
     }, 1500);
+
+    this.filterSubject.pipe(debounceTime(2000)).subscribe(() => {
+      this.applyFilter();
+    });
+  }
+
+  applyFilter() {
+    const lowerCaseFilter = this.filterValue.toLowerCase();
+    console.log(lowerCaseFilter)
+    this.dataSource = ELEMENT_DATA.filter(element =>
+      element.name.toLowerCase().includes(lowerCaseFilter) ||
+      element.symbol.toLowerCase().includes(lowerCaseFilter) ||
+      element.position.toString().includes(lowerCaseFilter) ||
+      element.weight.toString().includes(lowerCaseFilter)
+    );
+  }
+
+  onFilterChange(event: KeyboardEvent) {
+    const input = event.target as HTMLInputElement;
+    this.filterValue = input.value;
+    this.filterSubject.next(this.filterValue);
   }
 
 }
